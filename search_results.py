@@ -4,7 +4,7 @@ from pyes import RangeQuery
 from pyes import QueryStringQuery
 from pyes import BoolQuery
 from pyes import ESRange
-from pyes import ORFilter
+from pyes import ANDFilter
 from pyes import TermFilter
 from pyes import FilteredQuery
 from pyes import query
@@ -13,10 +13,14 @@ conn = ES('localhost:9200')
 
 a_range = RangeQuery(qrange=ESRange('a', 0.179, 0.180))
 b_filter = TermFilter("b", "0.2")
-c_range = RangeQuery(qrange=ESRange('c', 5, 20))
-que = FilteredQuery(BoolQuery(must=[a_range, c_range]), b_filter)
+period_filter = TermFilter("period", "2")
+total_filter = ANDFilter([b_filter, period_filter])
+c_range = RangeQuery(qrange=ESRange('c', 8, 12))
+que = FilteredQuery(BoolQuery(must=[a_range, c_range]), total_filter)
 
-search = query.Search(query=que, size=20)
+search = query.Search(query=que)
 get = conn.search(search, indices='shrimp')
 census =get.total
-print census
+
+for i in get:
+   print i
